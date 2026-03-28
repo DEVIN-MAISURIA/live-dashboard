@@ -5,50 +5,54 @@ import time
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
-    page_title="Industrial Live Dashboard",
-    layout="wide",
+    page_title="Live Dashboard",
+    layout="wide"
 )
 
-# ---------------- CUSTOM CSS (DARK UI) ----------------
+# ---------------- LIGHT THEME STYLE ----------------
 st.markdown("""
     <style>
-    body {
-        background-color: #0E1117;
-    }
     .stApp {
-        background-color: #0E1117;
-        color: white;
+        background-color: #F5F7FA;
     }
-    .metric-box {
-        padding: 15px;
-        border-radius: 10px;
-        background: linear-gradient(145deg, #1f2630, #131720);
-        box-shadow: 5px 5px 15px #0b0f14, -5px -5px 15px #1c2230;
+    .title {
         text-align: center;
+        color: #2C3E50;
+        font-size: 36px;
+        font-weight: bold;
+    }
+    .subtitle {
+        text-align: center;
+        color: #7F8C8D;
+        font-size: 16px;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ---------------- TITLE ----------------
-st.markdown("<h1 style='text-align:center; color:#00E5FF;'>⚡ Industrial Smart Monitoring Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("<div class='title'>📊 Live Monitoring Dashboard</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>Real-time data visualization (Cloud Based)</div>", unsafe_allow_html=True)
+
+st.markdown("---")
 
 # ---------------- SESSION STATE ----------------
 if "data" not in st.session_state:
     st.session_state.data = pd.DataFrame(columns=["Time", "Value"])
 
-# ---------------- LAYOUT ----------------
+# ---------------- METRIC LAYOUT ----------------
 col1, col2, col3 = st.columns(3)
 
-# ---------------- SIMULATION LOOP ----------------
+# ---------------- CHART ----------------
 chart = st.line_chart(st.session_state.data.set_index("Time"))
 
-placeholder = st.empty()
-
+# ---------------- LIVE LOOP ----------------
 for i in range(1000):
+
     value = np.random.randint(50, 100)
     temp = np.random.randint(20, 40)
-    pressure = np.random.randint(60, 120)
+    pressure = np.random.randint(70, 120)
 
+    # Store data
     new_data = pd.DataFrame({
         "Time": [i],
         "Value": [value]
@@ -60,37 +64,29 @@ for i in range(1000):
     )
 
     # ---------------- METRICS ----------------
-    with col1:
-        st.metric("📊 Load", value)
+    col1.metric("Load", value)
+    col2.metric("Temperature (°C)", temp)
+    col3.metric("Pressure", pressure)
 
-    with col2:
-        st.metric("🌡 Temperature (°C)", temp)
-
-    with col3:
-        st.metric("ضغط Pressure", pressure)
-
-    # ---------------- ALERT LOGIC ----------------
+    # ---------------- STATUS BAR ----------------
     if value > 90:
-        st.error("🚨 CRITICAL: System overload detected!")
-        status = "CRITICAL"
+        st.error("🔴 Critical Load - Immediate Attention Required")
     elif value > 75:
-        st.warning("⚠️ WARNING: High load condition")
-        status = "WARNING"
+        st.warning("🟡 High Load - Monitor System")
     else:
-        st.success("✅ NORMAL: System stable")
-        status = "NORMAL"
+        st.success("🟢 System Stable")
 
-    # ---------------- AI-LIKE INSIGHT ----------------
-    st.markdown("### 🧠 System Insight")
+    # ---------------- INSIGHT ----------------
+    st.markdown("### System Insight")
 
-    if status == "CRITICAL":
-        st.write("System is under extreme stress. Immediate action required to prevent failure.")
-    elif status == "WARNING":
-        st.write("Load is increasing. Monitor closely to avoid critical condition.")
+    if value > 90:
+        st.write("The system is experiencing excessive load. Risk of failure is high.")
+    elif value > 75:
+        st.write("Load is elevated. Continuous monitoring is recommended.")
     else:
-        st.write("System is operating within safe parameters.")
+        st.write("System is functioning within normal limits.")
 
-    # ---------------- UPDATE CHART ----------------
+    # ---------------- UPDATE GRAPH ----------------
     chart.add_rows(new_data.set_index("Time"))
 
     time.sleep(1)
