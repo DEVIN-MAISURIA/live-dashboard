@@ -1,41 +1,89 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from streamlit_autorefresh import st_autorefresh
 
-# Page setup
-st.set_page_config(page_title="Live Dashboard", layout="wide")
+# -------------------- PAGE CONFIG --------------------
+st.set_page_config(page_title="Advanced Live Dashboard", layout="wide")
 
-st.title("📊 Live Monitoring Dashboard")
+# -------------------- AUTO REFRESH --------------------
+st_autorefresh(interval=1000, key="live")
 
-# Auto refresh every 1 second
-st.autorefresh(interval=1000, key="refresh")
+# -------------------- CUSTOM CSS --------------------
+st.markdown("""
+<style>
+body {
+    background-color: #0e1117;
+}
+.metric-card {
+    background-color: #1c1f26;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
+}
+.metric-title {
+    font-size: 18px;
+    color: #aaa;
+}
+.metric-value {
+    font-size: 35px;
+    font-weight: bold;
+    color: #00ffcc;
+}
+</style>
+""", unsafe_allow_html=True)
 
-# Generate live values
-value = np.random.randint(50, 100)
-temp = np.random.randint(20, 40)
-pressure = np.random.randint(70, 120)
+# -------------------- TITLE --------------------
+st.markdown("<h1 style='text-align:center; color:#00ffcc;'>⚡ Live System Dashboard</h1>", unsafe_allow_html=True)
 
-# Ribbon (metrics)
+# -------------------- SESSION STATE (IMPORTANT) --------------------
+if "data" not in st.session_state:
+    st.session_state.data = np.random.randint(50, 100, 20).tolist()
+
+# Generate new value
+new_value = np.random.randint(50, 100)
+
+# Keep fixed length (NO SCROLL)
+st.session_state.data.pop(0)
+st.session_state.data.append(new_value)
+
+# -------------------- METRICS (RIBBON STYLE) --------------------
 col1, col2, col3 = st.columns(3)
-col1.metric("Load", value)
-col2.metric("Temperature (°C)", temp)
-col3.metric("Pressure", pressure)
+
+def metric_card(title, value, color):
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">{title}</div>
+        <div class="metric-value" style="color:{color}">{value}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col1:
+    metric_card("Load", new_value, "#00ffcc")
+
+with col2:
+    metric_card("Temperature (°C)", np.random.randint(20, 40), "#ffcc00")
+
+with col3:
+    metric_card("Pressure", np.random.randint(70, 120), "#ff4d4d")
 
 st.markdown("---")
 
-# Fixed-size data (no scrolling)
-x = list(range(20))
-y = np.random.randint(50, 100, size=20)
+# -------------------- GRAPH (NO SCROLL, FIXED WINDOW) --------------------
+chart_placeholder = st.empty()
 
-df = pd.DataFrame({"x": x, "y": y})
+df = pd.DataFrame({
+    "Time": list(range(len(st.session_state.data))),
+    "Load": st.session_state.data
+})
 
-# Graph updates in same place
-st.line_chart(df.set_index("x"))
+chart_placeholder.line_chart(df.set_index("Time"))
 
-# Status message
-if value > 90:
+# -------------------- STATUS --------------------
+if new_value > 90:
     st.error("🔴 Critical Condition")
-elif value > 75:
+elif new_value > 75:
     st.warning("🟡 High Load")
 else:
     st.success("🟢 System Stable")
