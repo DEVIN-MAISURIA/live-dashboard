@@ -1,13 +1,14 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from streamlit_autorefresh import st_autorefresh  # ✅ best method
+import time  # ✅ built-in (no error)
 
 # -------------------- PAGE CONFIG --------------------
 st.set_page_config(page_title="Advanced Live Dashboard", layout="wide")
 
-# -------------------- AUTO REFRESH (LIGHT) --------------------
-st_autorefresh(interval=2000, key="live")   # 2 sec → less load
+# -------------------- AUTO REFRESH (LIGHT + SAFE) --------------------
+time.sleep(2)   # 2 sec refresh (low load)
+st.rerun()
 
 # -------------------- CUSTOM CSS --------------------
 st.markdown("""
@@ -44,7 +45,7 @@ if "data" not in st.session_state:
 new_value = np.random.randint(50, 100)
 
 if len(st.session_state.data) >= 20:
-    st.session_state.data = st.session_state.data[1:]  # faster than pop
+    st.session_state.data = st.session_state.data[1:]  # fast slice
 
 st.session_state.data.append(new_value)
 
