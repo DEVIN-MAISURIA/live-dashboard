@@ -1,88 +1,36 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-import time  # ✅ built-in (no error)
+import random
 
-# -------------------- PAGE CONFIG --------------------
-st.set_page_config(page_title="Advanced Live Dashboard", layout="wide")
+# -------------------- PAGE --------------------
+st.set_page_config(page_title="Light Dashboard", layout="wide")
 
-# -------------------- AUTO REFRESH (LIGHT + SAFE) --------------------
-time.sleep(2)   # 2 sec refresh (low load)
-st.rerun()
+st.title("⚡ Live Dashboard")
 
-# -------------------- CUSTOM CSS --------------------
-st.markdown("""
-<style>
-body {
-    background-color: #0e1117;
-}
-.metric-card {
-    background-color: #1c1f26;
-    padding: 18px;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0px 0px 10px rgba(0,255,204,0.2);
-}
-.metric-title {
-    font-size: 16px;
-    color: #aaa;
-}
-.metric-value {
-    font-size: 30px;
-    font-weight: bold;
-}
-</style>
-""", unsafe_allow_html=True)
+# -------------------- SESSION DATA --------------------
+if "value" not in st.session_state:
+    st.session_state.value = 70
 
-# -------------------- TITLE --------------------
-st.markdown("<h1 style='text-align:center; color:#00ffcc;'>⚡ Live System Dashboard</h1>", unsafe_allow_html=True)
-
-# -------------------- SESSION STATE --------------------
-if "data" not in st.session_state:
-    st.session_state.data = np.random.randint(50, 100, 20).tolist()
-
-# -------------------- DATA UPDATE (OPTIMIZED) --------------------
-new_value = np.random.randint(50, 100)
-
-if len(st.session_state.data) >= 20:
-    st.session_state.data = st.session_state.data[1:]  # fast slice
-
-st.session_state.data.append(new_value)
+# -------------------- UPDATE VALUE --------------------
+st.session_state.value = random.randint(50, 100)
 
 # -------------------- METRICS --------------------
 col1, col2, col3 = st.columns(3)
 
-def metric_card(title, value, color):
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-title">{title}</div>
-        <div class="metric-value" style="color:{color}">{value}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col1:
-    metric_card("Load", new_value, "#00ffcc")
-
-with col2:
-    metric_card("Temperature (°C)", np.random.randint(20, 40), "#ffcc00")
-
-with col3:
-    metric_card("Pressure", np.random.randint(70, 120), "#ff4d4d")
+col1.metric("Load", st.session_state.value)
+col2.metric("Temp", random.randint(20, 40))
+col3.metric("Pressure", random.randint(70, 120))
 
 st.markdown("---")
 
-# -------------------- GRAPH (LIGHT RENDER) --------------------
-df = pd.DataFrame({
-    "Time": range(len(st.session_state.data)),
-    "Load": st.session_state.data
-})
+# -------------------- SIMPLE GRAPH --------------------
+data = [random.randint(50, 100) for _ in range(20)]
 
-st.line_chart(df.set_index("Time"), height=300)
+st.line_chart(data)
 
 # -------------------- STATUS --------------------
-if new_value > 90:
-    st.error("🔴 Critical Condition")
-elif new_value > 75:
-    st.warning("🟡 High Load")
+if st.session_state.value > 90:
+    st.error("Critical")
+elif st.session_state.value > 75:
+    st.warning("High")
 else:
-    st.success("🟢 System Stable")
+    st.success("Stable")
