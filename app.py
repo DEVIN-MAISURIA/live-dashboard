@@ -1,13 +1,14 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from streamlit_autorefresh import st_autorefresh
+import time   # ✅ used instead of streamlit_autorefresh
 
 # -------------------- PAGE CONFIG --------------------
 st.set_page_config(page_title="Advanced Live Dashboard", layout="wide")
 
-# -------------------- AUTO REFRESH --------------------
-st_autorefresh(interval=1000, key="live")
+# -------------------- AUTO REFRESH (NO ERROR VERSION) --------------------
+time.sleep(1)
+st.rerun()
 
 # -------------------- CUSTOM CSS --------------------
 st.markdown("""
@@ -20,7 +21,12 @@ body {
     padding: 20px;
     border-radius: 15px;
     text-align: center;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
+    box-shadow: 0px 0px 15px rgba(0,255,204,0.2);
+    transition: 0.3s;
+}
+.metric-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 0px 25px rgba(0,255,204,0.6);
 }
 .metric-title {
     font-size: 18px;
@@ -29,13 +35,15 @@ body {
 .metric-value {
     font-size: 35px;
     font-weight: bold;
-    color: #00ffcc;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # -------------------- TITLE --------------------
-st.markdown("<h1 style='text-align:center; color:#00ffcc;'>⚡ Live System Dashboard</h1>", unsafe_allow_html=True)
+st.markdown(
+    "<h1 style='text-align:center; color:#00ffcc;'>⚡ Live System Dashboard</h1>",
+    unsafe_allow_html=True
+)
 
 # -------------------- SESSION STATE --------------------
 if "data" not in st.session_state or not isinstance(st.session_state.data, list):
@@ -44,7 +52,7 @@ if "data" not in st.session_state or not isinstance(st.session_state.data, list)
 # -------------------- GENERATE NEW VALUE --------------------
 new_value = np.random.randint(50, 100)
 
-# SAFE UPDATE (NO ERROR)
+# SAFE UPDATE (NO CRASH)
 if len(st.session_state.data) >= 20:
     st.session_state.data.pop(0)
 
@@ -72,7 +80,7 @@ with col3:
 
 st.markdown("---")
 
-# -------------------- GRAPH (FIXED + NO FLICKER) --------------------
+# -------------------- GRAPH (FIXED WINDOW, NO SCROLL) --------------------
 chart_placeholder = st.empty()
 
 df = pd.DataFrame({
