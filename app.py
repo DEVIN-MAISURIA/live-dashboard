@@ -37,15 +37,17 @@ body {
 # -------------------- TITLE --------------------
 st.markdown("<h1 style='text-align:center; color:#00ffcc;'>⚡ Live System Dashboard</h1>", unsafe_allow_html=True)
 
-# -------------------- SESSION STATE (IMPORTANT) --------------------
-if "data" not in st.session_state:
+# -------------------- SESSION STATE --------------------
+if "data" not in st.session_state or not isinstance(st.session_state.data, list):
     st.session_state.data = np.random.randint(50, 100, 20).tolist()
 
-# Generate new value
+# -------------------- GENERATE NEW VALUE --------------------
 new_value = np.random.randint(50, 100)
 
-# Keep fixed length (NO SCROLL)
-st.session_state.data.pop(0)
+# SAFE UPDATE (NO ERROR)
+if len(st.session_state.data) >= 20:
+    st.session_state.data.pop(0)
+
 st.session_state.data.append(new_value)
 
 # -------------------- METRICS (RIBBON STYLE) --------------------
@@ -70,7 +72,7 @@ with col3:
 
 st.markdown("---")
 
-# -------------------- GRAPH (NO SCROLL, FIXED WINDOW) --------------------
+# -------------------- GRAPH (FIXED + NO FLICKER) --------------------
 chart_placeholder = st.empty()
 
 df = pd.DataFrame({
@@ -78,7 +80,8 @@ df = pd.DataFrame({
     "Load": st.session_state.data
 })
 
-chart_placeholder.line_chart(df.set_index("Time"))
+with chart_placeholder:
+    st.line_chart(df.set_index("Time"))
 
 # -------------------- STATUS --------------------
 if new_value > 90:
