@@ -16,6 +16,8 @@ col1, col2, col3 = st.columns(3)
 chart = st.line_chart(st.session_state.data.set_index("Time"))
 
 i = 0
+WINDOW_SIZE = 20   # number of points visible
+
 while True:
     value = np.random.randint(50, 100)
     temp = np.random.randint(20, 40)
@@ -23,6 +25,9 @@ while True:
 
     new_data = pd.DataFrame({"Time": [i], "Value": [value]})
     st.session_state.data = pd.concat([st.session_state.data, new_data], ignore_index=True)
+
+    # 🔥 Keep only last N points (scroll effect)
+    st.session_state.data = st.session_state.data.tail(WINDOW_SIZE)
 
     col1.metric("Load", value)
     col2.metric("Temp (°C)", temp)
@@ -35,7 +40,7 @@ while True:
     else:
         st.success("🟢 Normal")
 
-    chart.add_rows(new_data.set_index("Time"))
+    chart.line_chart(st.session_state.data.set_index("Time"))
 
     i += 1
     time.sleep(1)
